@@ -10,8 +10,12 @@ if exist('hardS.dat')~=2 | exist('hardST.dat')~=2,
   rand('state',2);
   randn('state',2);
   
-  [xk yk]=meshgrid([0:2:8],[0:2:10]);
-  ck=[xk(:),yk(:)];
+  % 硬数据
+%   [xk yk]=meshgrid([0:2:8],[0:2:10]); 
+  [xk yk zk] = meshgrid([0:2:8],[0:2:10],[0:2:8]);  % 3D grid
+  
+%   ck=[xk(:),yk(:)];
+  ck=[xk(:),yk(:),zk(:)];  % 3D grid 
   nk=size(ck,1);
   
   nh=10;
@@ -29,8 +33,10 @@ if exist('hardS.dat')~=2 | exist('hardST.dat')~=2,
   zsim=zsim+3;
   
   zh=zsim(1:nh);zh=zh(:);
-  writeGeoEAS([ch zh],{'x','y','Variable 1'},'File with hard data','hardS.dat');
+%   writeGeoEAS([ch zh],{'x','y','Variable 1'},'File with hard data','hardS.dat');
+  writeGeoEAS([ch zh],{'x','y','z', 'Variable 1'},'File with hard data','hardS.dat');
   
+  % 软数据 & 
   zs=zsim(nh+1:nh+ns);zs=zs(:);
   softpdftype=2;
   NV=3*ones(ns,1);
@@ -42,33 +48,34 @@ if exist('hardS.dat')~=2 | exist('hardST.dat')~=2,
   
   %%% generate hard and soft proba data for a space/time domain
   
-  cc=1;
-  aa=5;
-  at=10;
-  covmodel='exponentialC/exponentialC';
-  covparam=[cc aa at];
-  
-  tME=[1:5];
-  nME=length(tME);
-  [ch,z]=valstg2stv(zeros(nh,nME),ch,tME);
-  nh=size(ch,1);
-  [cs,z]=valstg2stv(zeros(ns,nME),cs,tME);
-  ns=size(cs,1);
-  
-  [zsim,L]=simuchol([ch;cs],covmodel,covparam,1);
-  zsim=zsim+3;
-  
-  zh=zsim(1:nh);zh=zh(:);
-  writeGeoEAS([ch zh],{'x','y','t','Variable 1'},'File with hard data','hardST.dat');
-  
-  zs=zsim(nh+1:nh+ns);zs=zs(:);
-  softpdftype=2;
-  NV=3*ones(ns,1);
-  WidthV=[0.3*rand(ns,1) 0.7*rand(ns,1) 3.0*rand(ns,1)];
-  A=0.5*sum(WidthV,2)+0.5*WidthV(:,2);
-  probdensV=[zeros(ns,1) 1./A 1./A zeros(ns,1)];
-  [nl,limi,probdens]=simuprobabilistic(zs,softpdftype,NV,WidthV,probdensV);
-  writeProba({cs,ones(ns,1)},1,softpdftype,nl,limi,probdens,'File with proba data','probaST.dat');
+%   cc=1;
+%   aa=5;
+%   at=10;
+%   covmodel='exponentialC/exponentialC';
+%   covparam=[cc aa at];
+%   
+%   tME=[1:5];
+%   nME=length(tME);
+%   [ch,z]=valstg2stv(zeros(nh,nME),ch,tME);
+%   nh=size(ch,1);
+%   [cs,z]=valstg2stv(zeros(ns,nME),cs,tME);
+%   ns=size(cs,1);
+%   
+%   [zsim,L]=simuchol([ch;cs],covmodel,covparam,1);
+%   zsim=zsim+3;
+%   
+%   zh=zsim(1:nh);zh=zh(:);
+%   writeGeoEAS([ch zh],{'x','y','t','Variable 1'},'File with hard data','hardST.dat');
+%   
+%   % 软数据 & 
+%   zs=zsim(nh+1:nh+ns);zs=zs(:);
+%   softpdftype=2;
+%   NV=3*ones(ns,1);
+%   WidthV=[0.3*rand(ns,1) 0.7*rand(ns,1) 3.0*rand(ns,1)];
+%   A=0.5*sum(WidthV,2)+0.5*WidthV(:,2);
+%   probdensV=[zeros(ns,1) 1./A 1./A zeros(ns,1)];
+%   [nl,limi,probdens]=simuprobabilistic(zs,softpdftype,NV,WidthV,probdensV);
+%   writeProba({cs,ones(ns,1)},1,softpdftype,nl,limi,probdens,'File with proba data','probaST.dat');
   
 end;
 
@@ -87,8 +94,10 @@ echo on;
 %%% Load the hard data and the soft data from files 
 
 [val,valname,filetitle]=readGeoEAS('hardS.dat');
-ch=val(:,1:2);
-zh=val(:,3);
+
+% 添加三维数据
+ch=val(:,1:3);    % 1:2 → 1:3
+zh=val(:,4);       % 3 → 4
 
 [cs,isST,softpdftype,nl,limi,probdens,filetitle]=readProba('probaS.dat');
 cs=cs{1};
@@ -128,8 +137,8 @@ clc;
 
 figure;hold on;
 Property={'Marker','MarkerSize','MarkerEdgeColor'};
-Value ={'s',12,[0 0 0]};
-colorplot(ch,zh,'hot',Property,Value);
+Value ={'s',12,[0 0 0]};       
+colorplot(ch,zh,'hot',Property,Value);     %将
 
 Property={'Marker','MarkerEdgeColor','MarkerFaceColor'};
 Value ={'o','k','none'};
